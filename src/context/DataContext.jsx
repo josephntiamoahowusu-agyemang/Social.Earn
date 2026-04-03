@@ -30,6 +30,12 @@ export const DataProvider = ({ children }) => {
     const saved = localStorage.getItem('social_earn_history');
     return saved ? JSON.parse(saved) : [];
   });
+
+  // All registered users
+  const [allUsers, setAllUsers] = useState(() => {
+    const saved = localStorage.getItem('social_earn_all_users');
+    return saved ? JSON.parse(saved) : [];
+  });
   
   // Channel for cross-tab simulation
   const [channel] = useState(() => new BroadcastChannel('social_earn_realtime'));
@@ -42,6 +48,18 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('social_earn_history', JSON.stringify(userHistory));
   }, [userHistory]);
+
+  // Reload users from storage periodically (simulates real-time updates for admin)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem('social_earn_all_users');
+      if (saved) {
+        setAllUsers(JSON.parse(saved));
+      }
+    }, 2000); // Check every 2 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Listen to broadcasts
   useEffect(() => {
@@ -115,6 +133,7 @@ export const DataProvider = ({ children }) => {
       tasks, 
       userHistory: userHistory.filter(h => user && h.userId === user.id), 
       allHistory: userHistory,
+      allUsers,
       notifications, 
       addNotification,
       verifyAndCompleteTask,

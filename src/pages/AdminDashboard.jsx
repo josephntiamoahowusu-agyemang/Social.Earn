@@ -4,13 +4,13 @@ import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { Users, Activity, CheckCircle, DollarSign } from 'lucide-react';
 
 export const AdminDashboard = () => {
-  const { tasks, allHistory } = useData();
+  const { tasks, allHistory, allUsers } = useData();
 
-  // Calculate mock stats
-  const totalUsers = 1248; // Mock value
+  // Calculate actual stats
+  const totalUsers = allUsers.length;
   const totalCompleted = tasks.reduce((acc, t) => acc + t.completed, 0);
   const totalPaid = allHistory.reduce((acc, h) => acc + h.amount, 0) + 12500; // Mock base + actual
-  const activeUsers = 84; // Mock value
+  const activeUsers = allUsers.filter(u => u.status === 'Active').length;
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in relative">
