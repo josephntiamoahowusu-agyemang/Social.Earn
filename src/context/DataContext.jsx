@@ -1,8 +1,10 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useAuth } from './AuthContext';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const DataContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useData = () => useContext(DataContext);
 
 // Initial Mock Tasks Base
@@ -43,13 +45,17 @@ export const DataProvider = ({ children }) => {
 
   // Listen to broadcasts
   useEffect(() => {
-    channel.onmessage = (event) => {
+    const handleMessage = (event) => {
       if (event.data.type === 'BROADCAST') {
         setNotifications(prev => [event.data.payload, ...prev]);
         // Toasts can hook into this
       }
     };
-    return () => channel.close();
+    channel.addEventListener('message', handleMessage);
+    return () => {
+      channel.removeEventListener('message', handleMessage);
+      channel.close();
+    };
   }, [channel]);
 
   // Actions

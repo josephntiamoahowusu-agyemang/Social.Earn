@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
 
 // Icons
-import { LayoutDashboard, CheckSquare, Users, Link as LinkIcon, LogOut, Bell, FileText, Send, Activity, Settings } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Users, Link as LinkIcon, LogOut, Bell, FileText, Send, Activity, Settings, Menu, X } from 'lucide-react';
 
 // Pages
 import { Auth } from './pages/Auth';
@@ -16,6 +16,7 @@ import { History } from './pages/History';
 import { Referrals } from './pages/Referrals';
 import { Profile } from './pages/Profile';
 
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
 
 // Global Toasts Component
@@ -23,7 +24,7 @@ const NotificationToasts = () => {
    const { notifications } = useData();
 
    return (
-      <div className="fixed top-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none">
+      <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 flex flex-col space-y-2 pointer-events-none">
          <AnimatePresence>
             {notifications.slice(0, 5).map((notif, idx) => (
                <motion.div 
@@ -31,12 +32,12 @@ const NotificationToasts = () => {
                   initial={{ opacity: 0, x: 50, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="bg-brand-surface border border-brand-primary p-4 rounded-xl shadow-2xl pointer-events-auto flex gap-3 max-w-sm"
+                  className="bg-brand-surface border border-brand-primary p-3 sm:p-4 rounded-xl shadow-2xl pointer-events-auto flex gap-3 max-w-xs sm:max-w-sm text-sm sm:text-base"
                >
-                  <Bell className="w-6 h-6 text-brand-primary animate-bounce shrink-0 mt-1" />
+                  <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primary animate-bounce shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-bold text-white">{notif.title}</h4>
-                    <p className="text-sm text-slate-300 mt-1">{notif.message}</p>
+                    <h4 className="font-bold text-white text-sm sm:text-base">{notif.title}</h4>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1">{notif.message}</p>
                   </div>
                </motion.div>
             ))}
@@ -48,12 +49,12 @@ const NotificationToasts = () => {
 // Layouts 
 const MainLayout = ({ children }) => (
   <div className="min-h-screen bg-brand-bg text-slate-100 flex flex-col">
-    {/* Optional public navbar here */}
-    <div className="flex-1">{children}</div>
+    {/* Main content */}
+    <div className="flex-1 w-full">{children}</div>
   </div>
 );
 
-const Sidebar = ({ role }) => {
+const Sidebar = ({ role, isOpen, onClose }) => {
   const { logout, user } = useAuth();
   const location = useLocation();
 
@@ -72,68 +73,102 @@ const Sidebar = ({ role }) => {
 
   const links = role === 'admin' ? adminLinks : userLinks;
 
+  const handleLinkClick = () => {
+    onClose();
+  };
+
   return (
-    <aside className="w-72 bg-brand-surface border-r border-slate-700/50 flex flex-col shadow-2xl z-10 sticky top-0 h-screen">
-      <div className="p-6 border-b border-slate-700/50">
-        <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-brand-primary tracking-tight">
-          Social Earn <span className="text-sm border border-emerald-500 text-emerald-500 rounded px-2 py-0.5 ml-2 font-mono uppercase tracking-widest">{role}</span>
-        </h1>
-      </div>
+    <>
+      {/* Mobile backdrop overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 md:hidden z-30"
+          onClick={onClose}
+        />
+      )}
       
-      <div className="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
-         {links.map((link) => {
+      {/* Sidebar */}
+      <aside className={`sidebar-responsive ${isOpen ? 'sidebar-open' : 'sidebar-closed'} fixed md:static md:translate-x-0 md:opacity-100 left-0 top-0 h-screen w-64 sm:w-72 bg-brand-surface border-r border-slate-700/50 flex flex-col shadow-2xl z-40 md:z-10 md:sticky`}>
+        <div className="p-4 sm:p-6 border-b border-slate-700/50">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-brand-primary tracking-tight">
+              Social Earn
+            </h1>
+            <button
+              onClick={onClose}
+              className="md:hidden text-slate-400 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <span className="text-xs sm:text-sm border border-emerald-500 text-emerald-500 rounded px-2 py-0.5 font-mono uppercase tracking-widest inline-block">{role}</span>
+        </div>
+        
+        <div className="flex-1 py-6 sm:py-8 px-3 sm:px-4 space-y-1 sm:space-y-2 overflow-y-auto">
+          {links.map((link) => {
             const isActive = location.pathname === link.path;
             return (
-               <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold ${
-                     isActive 
-                        ? 'bg-brand-primary text-slate-900 shadow-lg shadow-brand-primary/20' 
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
-               >
-                  {React.cloneElement(link.icon, { className: 'w-5 h-5' })}
-                  {link.name}
-               </Link>
+              <Link 
+                key={link.path} 
+                to={link.path}
+                onClick={handleLinkClick}
+                className={`flex items-center gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl transition-all font-semibold text-sm sm:text-base touch-target ${
+                  isActive 
+                    ? 'bg-brand-primary text-slate-900 shadow-lg shadow-brand-primary/20' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                {React.cloneElement(link.icon, { className: 'w-5 h-5 shrink-0' })}
+                <span className="truncate">{link.name}</span>
+              </Link>
             )
-         })}
-      </div>
+          })}
+        </div>
 
-      <div className="p-6 border-t border-slate-700/50 mt-auto">
-         <div className="flex items-center gap-3 mb-6 px-2">
-            <div className="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg">
-               {user?.name?.charAt(0).toUpperCase()}
+        <div className="p-4 sm:p-6 border-t border-slate-700/50 mt-auto space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-lg shrink-0">
+              {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 overflow-hidden">
-               <p className="text-white font-semibold truncate text-sm">{user?.name}</p>
-               <p className="text-slate-500 text-xs truncate">{user?.email}</p>
+              <p className="text-white font-semibold truncate text-sm">{user?.name}</p>
+              <p className="text-slate-500 text-xs truncate">{user?.email}</p>
             </div>
-         </div>
-         <button 
-           onClick={logout} 
-           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-all font-semibold"
-         >
-           <LogOut className="w-5 h-5" /> Log Out
-         </button>
-      </div>
-    </aside>
+          </div>
+          <button 
+            onClick={logout} 
+            className="w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-slate-800 text-red-400 hover:bg-red-500 hover:text-white transition-all font-semibold text-sm sm:text-base touch-target"
+          >
+            <LogOut className="w-5 h-5" /> Log Out
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
-const Header = () => {
+const Header = ({ onMenuClick, isMobileMenuOpen }) => {
    const { notifications } = useData();
    
    return (
-      <header className="h-20 border-b border-slate-700/50 bg-brand-surface/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-8">
-         <div className="flex items-center gap-4 text-slate-300">
+      <header className="h-16 sm:h-20 border-b border-slate-700/50 bg-brand-surface/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 md:px-8 gap-4">
+         <button
+            onClick={onMenuClick}
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-slate-700 transition-colors text-slate-300 hover:text-white"
+            aria-label="Toggle menu"
+         >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+         </button>
+         
+         <div className="flex-1 flex items-center gap-4 text-slate-300">
             {/* Search or breadcrumbs could go here */}
          </div>
-         <div className="flex items-center gap-6">
-            <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
-               <Bell className="w-6 h-6" />
+         
+         <div className="flex items-center gap-4 sm:gap-6">
+            <button className="relative p-2 text-slate-400 hover:text-white transition-colors touch-target">
+               <Bell className="w-5 sm:w-6 h-5 sm:h-6" />
                {notifications.length > 0 && (
-                  <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-brand-surface"></span>
+                  <span className="absolute top-1 right-1 w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full border border-brand-surface"></span>
                )}
             </button>
          </div>
@@ -141,34 +176,58 @@ const Header = () => {
    )
 }
 
-const AppLayout = ({ children, role }) => (
-  <div className="min-h-screen bg-brand-bg text-slate-100 flex font-sans">
-    <Sidebar role={role} />
-    <div className="flex-1 flex flex-col min-w-0">
-      <Header />
-      <main className="flex-1 p-8 overflow-y-auto w-full max-w-7xl mx-auto">
-         {children}
-      </main>
+const AppLayout = ({ children, role }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleCloseMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-brand-bg text-slate-100 flex flex-col md:flex-row font-sans">
+      <Sidebar role={role} isOpen={mobileMenuOpen} onClose={handleCloseMobileMenu} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header 
+          onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+          isMobileMenuOpen={mobileMenuOpen}
+        />
+        <main className="flex-1 overflow-y-auto w-full">
+          <div className="container-responsive py-6 sm:py-8 md:py-10">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Landing
 const LandingPage = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-brand-bg to-brand-surface">
-    <h1 className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 mb-6 text-center">
-      Get Paid For Your Screen Time
-    </h1>
-    <p className="text-2xl mb-12 text-slate-300 max-w-2xl text-center">
-      Complete simple tasks like following accounts, liking posts, and subscribing to channels. Earn real cash instantly.
-    </p>
-    <div className="space-x-6">
-      <Link to="/signup" className="px-8 py-4 bg-emerald-500 text-slate-900 text-lg font-bold rounded-xl hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all inline-block hover:-translate-y-1">
-         Start Earning Now
-      </Link>
-      <Link to="/login" className="px-8 py-4 bg-slate-800 border border-slate-600 text-white text-lg font-bold rounded-xl hover:bg-slate-700 transition-all inline-block hover:-translate-y-1">
-         Sign In
-      </Link>
+  <div className="flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 py-12 sm:py-20 bg-gradient-to-b from-brand-bg to-brand-surface">
+    <div className="w-full max-w-3xl space-y-6 sm:space-y-8 text-center">
+      <h1 className="text-responsive-h1 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+        Get Paid For Your Screen Time
+      </h1>
+      
+      <p className="text-responsive-body text-slate-300 max-w-2xl mx-auto">
+        Complete simple tasks like following accounts, liking posts, and subscribing to channels. Earn real cash instantly.
+      </p>
+      
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center pt-6 sm:pt-8">
+        <Link 
+          to="/signup" 
+          className="px-6 sm:px-8 py-3 sm:py-4 bg-emerald-500 text-slate-900 font-bold rounded-xl hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all inline-block hover:-translate-y-1 touch-target text-center text-sm sm:text-base"
+        >
+          Start Earning Now
+        </Link>
+        
+        <Link 
+          to="/login" 
+          className="px-6 sm:px-8 py-3 sm:py-4 bg-slate-800 border border-slate-600 text-white font-bold rounded-xl hover:bg-slate-700 transition-all inline-block hover:-translate-y-1 touch-target text-center text-sm sm:text-base"
+        >
+          Sign In
+        </Link>
+      </div>
     </div>
   </div>
 );

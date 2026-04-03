@@ -1,5 +1,8 @@
+/* stylelint-disable */
+/* CSS Linter doesn't recognize Tailwind v4 @theme and @apply syntax - these are valid */
 @import "tailwindcss";
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
   --color-brand-primary: #10b981; /* emerald-500 */
   --color-brand-primary-hover: #059669; /* emerald-600 */
@@ -11,7 +14,156 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-brand-bg text-slate-100 font-sans antialiased;
+    /* stylelint-disable-next-line at-rule-no-unknown */
+    @apply bg-brand-bg text-slate-100 font-sans antialiased overflow-x-hidden;
+  }
+}
+
+/* Responsive Typography */
+@layer utilities {
+  .text-responsive-h1 {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold;
+  }
+
+  .text-responsive-h2 {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold;
+  }
+
+  .text-responsive-h3 {
+    @apply text-lg sm:text-xl md:text-2xl font-bold;
+  }
+
+  .text-responsive-body {
+    @apply text-sm sm:text-base md:text-lg font-medium;
+  }
+
+  /* Responsive Padding */
+  .p-responsive {
+    @apply p-4 sm:p-6 md:p-8 lg:p-10;
+  }
+
+  .px-responsive {
+    @apply px-4 sm:px-6 md:px-8 lg:px-10;
+  }
+
+  .py-responsive {
+    @apply py-4 sm:py-6 md:py-8 lg:py-10;
+  }
+
+  /* Responsive Grid */
+  .grid-responsive-auto {
+    @apply grid auto-cols-[minmax(250px,1fr)] gap-4 sm:gap-6 md:gap-8;
+  }
+
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8;
+  }
+
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8;
+  }
+
+  .grid-responsive-4 {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8;
+  }
+
+  /* Responsive Containers */
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10;
+  }
+
+  /* Responsive Gap */
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 md:gap-6 lg:gap-8;
+  }
+
+  /* Safe area for notches (iOS/Android) */
+  .safe-area-inset {
+    @apply iOS safe-area-inset-left safe-area-inset-right safe-area-inset-top safe-area-inset-bottom;
+  }
+}
+
+/* Mobile-first responsive animations */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Touch-friendly sizing for mobile */
+@media (max-width: 768px) {
+  @layer utilities {
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
+
+/* Responsive sidebar styles */
+@layer utilities {
+  .sidebar-responsive {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  }
+
+  .sidebar-open {
+    @apply translate-x-0 opacity-100;
+  }
+
+  .sidebar-closed {
+    @apply -translate-x-full opacity-0 md:translate-x-0 md:opacity-100;
+  }
+}
+
+/* Responsive hamburger menu */
+@layer utilities {
+  .hamburger-icon {
+    @apply relative inline-flex md:hidden;
+  }
+
+  .hamburger-line {
+    @apply absolute h-0.5 w-6 bg-current transition-all duration-300 ease-in-out;
+  }
+
+  .hamburger-line:nth-child(1) {
+    @apply top-0;
+  }
+
+  .hamburger-line:nth-child(2) {
+    @apply top-2;
+  }
+
+  .hamburger-line:nth-child(3) {
+    @apply top-4;
+  }
+
+  .hamburger-open .hamburger-line:nth-child(1) {
+    @apply translate-y-2 -rotate-45;
+  }
+
+  .hamburger-open .hamburger-line:nth-child(2) {
+    @apply opacity-0;
+  }
+
+  .hamburger-open .hamburger-line:nth-child(3) {
+    @apply -translate-y-2 rotate-45;
   }
 }

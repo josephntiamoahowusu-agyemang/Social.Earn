@@ -5,7 +5,7 @@ const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext); // eslint-disable-line react-refresh/only-export-components
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
