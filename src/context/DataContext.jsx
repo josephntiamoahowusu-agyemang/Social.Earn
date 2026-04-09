@@ -36,9 +36,6 @@ export const DataProvider = ({ children }) => {
     const saved = localStorage.getItem('social_earn_all_users');
     return saved ? JSON.parse(saved) : [];
   });
-  
-  // Channel for cross-tab simulation
-  const [channel] = useState(() => new BroadcastChannel('social_earn_realtime'));
 
   // Save to localStorage when state changes
   useEffect(() => {
@@ -61,20 +58,40 @@ export const DataProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Listen to broadcasts
+  // Listen to broadcasts via localStorage (works better than BroadcastChannel)
   useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data.type === 'BROADCAST') {
-        setNotifications(prev => [event.data.payload, ...prev]);
-        // Toasts can hook into this
+    const handleStorageChange = (event) => {
+      if (event.key === 'social_earn_broadcasts') {
+        const broadcasts = event.newValue ? JSON.parse(event.newValue) : [];
+        if (broadcasts.length > 0) {
+          const latestBroadcast = broadcasts[broadcasts.length - 1];
+          setNotifications(prev => {
+            // Avoid duplicate notifications
+            if (prev.some(n => n.id === latestBroadcast.id)) {
+              return prev;
+            }
+            return [latestBroadcast, ...prev];
+          });
+        }
       }
     };
-    channel.addEventListener('message', handleMessage);
-    return () => {
-      channel.removeEventListener('message', handleMessage);
-      channel.close();
-    };
-  }, [channel]);
+    
+    // Also check for broadcasts on mount
+    const savedBroadcasts = localStorage.getItem('social_earn_broadcasts');
+    if (savedBroadcasts) {
+      const broadcasts = JSON.parse(savedBroadcasts);
+      if (broadcasts.length > 0) {
+        const recentBroadcasts = broadcasts.slice(-5).reverse();
+        setNotifications(prev => {
+          const newNotifs = recentBroadcasts.filter(b => !prev.some(n => n.id === b.id));
+          return [...newNotifs, ...prev];
+        });
+      }
+    }
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Actions
   const addNotification = (notif) => {
@@ -125,10 +142,28 @@ export const DataProvider = ({ children }) => {
   };
 
   const adminBroadcast = (message) => {
-    const payload = { title: 'Admin Global Broadcast', message, type: 'broadcast' };
-    channel.postMessage({ type: 'BROADCAST', payload });
-    // Also add to own notification queue
-    addNotification(payload);
+    const broadcast = { 
+      id: Date.now(), 
+      title: '📢 Admin Announcement', 
+      message, 
+      type: 'broadcast',
+      timestamp: new Date().toISOString()
+    };
+    
+    // Save to localStorage so all tabs/windows see it
+    const savedBroadcasts = localStorage.getItem('social_earn_broadcasts');
+    const broadcasts = savedBroadcasts ? JSON.parse(savedBroadcasts) : [];
+    broadcasts.push(broadcast);
+    localStorage.setItem('social_earn_broadcasts', JSON.stringify(broadcasts));
+    
+    // Also add to own notification queue immediately
+    addNotification(broadcast);
+    
+    // Emit storage event for other tabs
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'social_earn_broadcasts',
+      newValue: JSON.stringify(broadcasts)
+    }));
   };
 
   const updateUserStatus = (userId, newStatus) => {
