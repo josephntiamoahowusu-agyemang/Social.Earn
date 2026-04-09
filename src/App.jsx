@@ -23,23 +23,57 @@ import { AnimatePresence, motion } from 'framer-motion';
 // Global Toasts Component
 const NotificationToasts = () => {
    const { notifications } = useData();
+   const [displayedNotifs, setDisplayedNotifs] = React.useState([]);
+
+   React.useEffect(() => {
+      if (notifications.length > 0) {
+         const latestNotif = notifications[0];
+         
+         // Only add if not already displayed
+         if (!displayedNotifs.some(n => n.id === latestNotif.id)) {
+            setDisplayedNotifs(prev => [latestNotif, ...prev].slice(0, 5));
+         }
+      }
+   }, [notifications]);
+
+   const handleClose = (notifId) => {
+      setDisplayedNotifs(prev => prev.filter(n => n.id !== notifId));
+   };
+
+   React.useEffect(() => {
+      // Auto-dismiss notifications after 5 seconds
+      const timers = displayedNotifs.map(notif => 
+         setTimeout(() => {
+            handleClose(notif.id);
+         }, 5000)
+      );
+
+      return () => timers.forEach(timer => clearTimeout(timer));
+   }, [displayedNotifs]);
 
    return (
       <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 flex flex-col space-y-2 pointer-events-none">
          <AnimatePresence>
-            {notifications.slice(0, 5).map((notif, idx) => (
+            {displayedNotifs.map((notif, idx) => (
                <motion.div 
                   key={notif.id || idx}
                   initial={{ opacity: 0, x: 50, scale: 0.9 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
+                  exit={{ opacity: 0, x: 50, scale: 0.9 }}
                   className="bg-brand-surface border border-brand-primary p-3 sm:p-4 rounded-xl shadow-2xl pointer-events-auto flex gap-3 max-w-xs sm:max-w-sm text-sm sm:text-base"
                >
                   <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primary animate-bounce shrink-0 mt-1" />
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-bold text-white text-sm sm:text-base">{notif.title}</h4>
                     <p className="text-xs sm:text-sm text-slate-300 mt-1">{notif.message}</p>
                   </div>
+                  <button
+                     onClick={() => handleClose(notif.id)}
+                     className="text-slate-400 hover:text-white transition-colors shrink-0 mt-1"
+                     aria-label="Close notification"
+                  >
+                     <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
                </motion.div>
             ))}
          </AnimatePresence>
