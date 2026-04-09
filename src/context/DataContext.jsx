@@ -128,6 +128,15 @@ export const DataProvider = ({ children }) => {
     addNotification(payload);
   };
 
+  const updateUserStatus = (userId, newStatus) => {
+    const updated = allUsers.map(u => 
+      u.id === userId ? { ...u, status: newStatus } : u
+    );
+    setAllUsers(updated);
+    localStorage.setItem('social_earn_all_users', JSON.stringify(updated));
+    return updated.find(u => u.id === userId);
+  };
+
   return (
     <DataContext.Provider value={{ 
       tasks, 
@@ -138,7 +147,8 @@ export const DataProvider = ({ children }) => {
       addNotification,
       verifyAndCompleteTask,
       adminPostTask,
-      adminBroadcast
+      adminBroadcast,
+      updateUserStatus
     }}>
       {children}
     </DataContext.Provider>

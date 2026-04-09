@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
-import { Camera, Video, Smartphone, Share2 } from 'lucide-react';
+import { Camera, Video, Smartphone, Share2, AlertCircle } from 'lucide-react';
 
 export const AdminUsers = () => {
-  const { allUsers, allHistory } = useData();
+  const { allUsers, allHistory, updateUserStatus } = useData();
+  const [loadingUserId, setLoadingUserId] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(null);
   
   // Enrich users with activity data
   const usersWithActivity = allUsers.map(user => {
@@ -29,6 +31,24 @@ export const AdminUsers = () => {
   users.forEach(u => {
     if (!u.socialHandles) u.socialHandles = { Instagram: '', TikTok: '', YouTube: '', Facebook: '' };
   });
+
+  const handleSuspendClick = (userId, userName, currentStatus) => {
+    const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
+    const action = currentStatus === 'Active' ? 'suspend' : 'unsuspend';
+    setConfirmDialog({ userId, userName, action, newStatus });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    
+    setLoadingUserId(confirmDialog.userId);
+    // Simulate processing delay
+    await new Promise(res => setTimeout(res, 800));
+    
+    updateUserStatus(confirmDialog.userId, confirmDialog.newStatus);
+    setLoadingUserId(null);
+    setConfirmDialog(null);
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -71,9 +91,19 @@ export const AdminUsers = () => {
             
             <div className="pt-2 border-t border-slate-700/50 flex gap-2">
               {u.status === 'Active' ? (
-                <button className="flex-1 text-xs border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded transition-colors">Suspend</button>
+                <button 
+                  onClick={() => handleSuspendClick(u.id, u.name, u.status)}
+                  disabled={loadingUserId === u.id}
+                  className="flex-1 text-xs border border-red-500 text-red-500 hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 rounded transition-colors">
+                  {loadingUserId === u.id ? 'Processing...' : 'Suspend'}
+                </button>
               ) : (
-                <button className="flex-1 text-xs border border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white px-2 py-1 rounded transition-colors">Unsuspend</button>
+                <button 
+                  onClick={() => handleSuspendClick(u.id, u.name, u.status)}
+                  disabled={loadingUserId === u.id}
+                  className="flex-1 text-xs border border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 rounded transition-colors">
+                  {loadingUserId === u.id ? 'Processing...' : 'Unsuspend'}
+                </button>
               )}
             </div>
           </div>
@@ -120,9 +150,19 @@ export const AdminUsers = () => {
                 </td>
                 <td className="p-4 text-right">
                    {u.status === 'Active' ? (
-                     <button className="text-xs border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-3 py-1 rounded transition-colors">Suspend</button>
+                     <button 
+                       onClick={() => handleSuspendClick(u.id, u.name, u.status)}
+                       disabled={loadingUserId === u.id}
+                       className="text-xs border border-red-500 text-red-500 hover:bg-red-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 rounded transition-colors">
+                       {loadingUserId === u.id ? 'Processing...' : 'Suspend'}
+                     </button>
                    ) : (
-                     <button className="text-xs border border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white px-3 py-1 rounded transition-colors">Unsuspend</button>
+                     <button 
+                       onClick={() => handleSuspendClick(u.id, u.name, u.status)}
+                       disabled={loadingUserId === u.id}
+                       className="text-xs border border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1 rounded transition-colors">
+                       {loadingUserId === u.id ? 'Processing...' : 'Unsuspend'}
+                     </button>
                    )}
                 </td>
               </tr>
@@ -130,6 +170,47 @@ export const AdminUsers = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Confirmation Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-brand-surface border border-slate-700 rounded-2xl p-6 max-w-md w-full space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  {confirmDialog.action === 'suspend' ? 'Suspend User' : 'Unsuspend User'}
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  {confirmDialog.action === 'suspend' 
+                    ? `Are you sure you want to suspend ${confirmDialog.userName}? They will not be able to complete tasks.`
+                    : `Are you sure you want to unsuspend ${confirmDialog.userName}? They will regain access to tasks.`
+                  }
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="flex-1 px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold text-white transition-colors ${
+                  confirmDialog.action === 'suspend'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-emerald-600 hover:bg-emerald-700'
+                }`}
+              >
+                {confirmDialog.action === 'suspend' ? 'Suspend' : 'Unsuspend'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

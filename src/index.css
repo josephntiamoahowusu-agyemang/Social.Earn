@@ -86,7 +86,10 @@
 
   /* Safe area for notches (iOS/Android) */
   .safe-area-inset {
-    @apply iOS safe-area-inset-left safe-area-inset-right safe-area-inset-top safe-area-inset-bottom;
+    padding-left: max(var(--safe-area-inset-left, 0px));
+    padding-right: max(var(--safe-area-inset-right, 0px));
+    padding-top: max(var(--safe-area-inset-top, 0px));
+    padding-bottom: max(var(--safe-area-inset-bottom, 0px));
   }
 }
 
