@@ -15,6 +15,7 @@ import { AdminUsers } from './pages/AdminUsers';
 import { History } from './pages/History';
 import { Referrals } from './pages/Referrals';
 import { Profile } from './pages/Profile';
+import { Notifications } from './pages/Notifications';
 
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
@@ -62,6 +63,7 @@ const Sidebar = ({ role, isOpen, onClose }) => {
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard /> },
     { name: 'Task History', path: '/history', icon: <CheckSquare /> },
     { name: 'Refer & Earn', path: '/referrals', icon: <LinkIcon /> },
+    { name: 'Notifications', path: '/notifications', icon: <Bell /> },
     { name: 'Profile', path: '/profile', icon: <Settings /> },
   ];
 
@@ -258,6 +260,7 @@ function App() {
         <Route path="/history" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><History /></AppLayout></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Referrals /></AppLayout></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Profile /></AppLayout></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Notifications /></AppLayout></ProtectedRoute>} />
         
         {/* Admin Routes */}
         <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AppLayout role="admin"><AdminDashboard /></AppLayout></ProtectedRoute>} />

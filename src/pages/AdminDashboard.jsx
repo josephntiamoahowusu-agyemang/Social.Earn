@@ -262,17 +262,40 @@ export const AdminDashboard = () => {
         </div>
 
         {/* Recent Broadcasts */}
-        <div className="pt-4 border-t border-slate-700 space-y-2 max-h-48 overflow-y-auto">
-          <p className="text-xs text-slate-400 font-semibold">Recent broadcasts:</p>
+        <div className="pt-4 border-t border-slate-700 space-y-3">
+          <div className="flex items-center gap-2 mb-3">
+            <Send className="w-4 h-4 text-cyan-400" />
+            <p className="text-sm font-semibold text-white">Broadcast History</p>
+            {notifications.length > 0 && <span className="ml-auto text-xs text-slate-400">{notifications.length} sent</span>}
+          </div>
+          
           {notifications.length === 0 ? (
-            <p className="text-xs text-slate-500 italic">No broadcasts sent yet</p>
+            <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50 text-center">
+              <p className="text-xs sm:text-sm text-slate-400">No broadcasts sent yet</p>
+            </div>
           ) : (
-            notifications.slice(0, 5).map(notif => (
-              <div key={notif.id} className="bg-slate-800/50 p-2 rounded border border-slate-700/50 text-xs">
-                <p className="text-amber-400 font-semibold mb-1">{new Date(notif.timestamp).toLocaleTimeString()}</p>
-                <p className="text-slate-300">{notif.message}</p>
-              </div>
-            ))
+            <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+              {notifications.slice().reverse().map((notif, idx) => {
+                const date = new Date(notif.timestamp);
+                const formatTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const formatDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                
+                return (
+                  <div key={notif.id || idx} className="bg-gradient-to-r from-slate-800/50 to-slate-800/30 p-3 sm:p-4 rounded-lg border border-cyan-500/20 hover:border-cyan-500/50 transition-colors">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs sm:text-sm font-bold text-cyan-400">{formatDate}</span>
+                          <span className="text-xs text-slate-500">at {formatTime}</span>
+                        </div>
+                      </div>
+                      <span className="text-xs bg-cyan-500/20 text-cyan-300 px-2.5 py-1 rounded-full font-medium whitespace-nowrap">📢 Announcement</span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed break-words">{notif.message}</p>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

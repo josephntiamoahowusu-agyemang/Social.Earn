@@ -23,7 +23,11 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : INITIAL_TASKS;
   });
 
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(() => {
+    const savedBroadcasts = localStorage.getItem('social_earn_broadcasts');
+    const broadcasts = savedBroadcasts ? JSON.parse(savedBroadcasts) : [];
+    return broadcasts;
+  });
   
   // Per-user isolated states, loaded manually on auth
   const [userHistory, setUserHistory] = useState(() => {
