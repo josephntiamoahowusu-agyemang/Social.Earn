@@ -129,8 +129,29 @@ export const AuthProvider = ({ children }) => {
     return true;
   };
 
+  const addEarnings = (amount) => {
+    const updatedUser = {
+      ...user,
+      earnings: (user.earnings || 0) + amount
+    };
+    setUser(updatedUser);
+    
+    // Update in users list
+    const existingUsers = localStorage.getItem('social_earn_all_users');
+    if (existingUsers) {
+      const usersList = JSON.parse(existingUsers);
+      const userIndex = usersList.findIndex(u => u.id === user.id);
+      if (userIndex !== -1) {
+        usersList[userIndex] = updatedUser;
+        localStorage.setItem('social_earn_all_users', JSON.stringify(usersList));
+      }
+    }
+    
+    return updatedUser;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateProfile, addEarnings }}>
       {children}
     </AuthContext.Provider>
   );

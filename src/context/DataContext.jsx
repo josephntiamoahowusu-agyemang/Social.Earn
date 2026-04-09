@@ -15,7 +15,7 @@ const INITIAL_TASKS = [
 ];
 
 export const DataProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, addEarnings } = useAuth();
   
   // Shared persistent state
   const [tasks, setTasks] = useState(() => {
@@ -101,13 +101,16 @@ export const DataProvider = ({ children }) => {
     };
     setUserHistory(prev => [historyItem, ...prev]);
 
+    // Add earnings to user account
+    if (addEarnings) {
+      addEarnings(task.amount);
+    }
+
     // Update global task completed count
     setTasks(prev => prev.map(t => 
       t.id === taskId ? { ...t, completed: t.completed + 1 } : t
     ));
 
-    // Note: User earnings increment should be tracked at AuthContext or separately 
-    // for this mock we just dispatch a "Task Completed"
     return historyItem;
   };
 
