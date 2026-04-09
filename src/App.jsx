@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
 
@@ -185,6 +185,7 @@ const Sidebar = ({ role, isOpen, onClose }) => {
 
 const Header = ({ onMenuClick, isMobileMenuOpen }) => {
    const { notifications } = useData();
+   const navigate = useNavigate();
    
    return (
       <header className="h-12 sm:h-16 md:h-20 border-b border-slate-700/50 bg-brand-surface/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-2 sm:px-4 md:px-8 gap-4">
@@ -201,10 +202,14 @@ const Header = ({ onMenuClick, isMobileMenuOpen }) => {
          </div>
          
          <div className="flex items-center gap-3 sm:gap-6">
-            <button className="relative p-2 text-slate-400 hover:text-white transition-colors touch-target">
+            <button 
+               onClick={() => navigate('/notifications')}
+               className="relative p-2 text-slate-400 hover:text-brand-primary transition-colors touch-target"
+               aria-label="View notifications"
+            >
                <Bell className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                {notifications.length > 0 && (
-                  <span className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full border border-brand-surface"></span>
+                  <span className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full border border-brand-surface animate-pulse"></span>
                )}
             </button>
          </div>
