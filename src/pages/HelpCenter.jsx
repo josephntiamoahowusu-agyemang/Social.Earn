@@ -9,6 +9,8 @@ export const HelpCenter = () => {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [category, setCategory] = useState('bug');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [tickets, setTickets] = useState(() => {
     const saved = localStorage.getItem('social_earn_help_tickets');
@@ -22,6 +24,62 @@ export const HelpCenter = () => {
     { id: 'account', name: '👤 Account Issue', color: 'indigo' },
     { id: 'other', name: '❓ Other', color: 'slate' },
   ];
+
+  const categoryNames = {
+    bug: 'Bug Report',
+    feature: 'Feature Request',
+    payment: 'Payment Issue',
+    account: 'Account Issue',
+    other: 'Other Issue'
+  };
+
+  const handleCategoryChange = (catId) => {
+    setCategory(catId);
+    // Auto-populate subject with category name
+    if (!subject || subject.startsWith('🐛') || subject.startsWith('💡') || subject.startsWith('💰') || subject.startsWith('👤') || subject.startsWith('❓')) {
+      const catObj = categories.find(c => c.id === catId);
+      setSubject(catObj.name + ' - ');
+    }
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        addNotification({
+          title: 'File Too Large',
+          message: 'Image must be less than 5MB',
+          type: 'error'
+        });
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        addNotification({
+          title: 'Invalid File',
+          message: 'Please select an image file',
+          type: 'error'
+        });
+        return;
+      }
+
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,6 +100,7 @@ export const HelpCenter = () => {
       subject,
       message,
       category,
+      image: imagePreview || null, // Store base64 image
       status: 'open',
       createdAt: new Date().toISOString(),
       responses: []
@@ -60,6 +119,8 @@ export const HelpCenter = () => {
     setSubject('');
     setMessage('');
     setCategory('bug');
+    setImageFile(null);
+    setImagePreview(null);
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
   };
@@ -104,7 +165,7 @@ export const HelpCenter = () => {
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setCategory(cat.id)}
+                    onClick={() => handleCategoryChange(cat.id)}
                     className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                       category === cat.id
                         ? 'bg-brand-primary text-slate-900 ring-2 ring-brand-primary'
@@ -142,6 +203,41 @@ export const HelpCenter = () => {
                 required
               />
             </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-slate-300 font-semibold mb-2 text-sm sm:text-base">📸 Attach Screenshot (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-slate-400 text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
+              />
+              <p className="text-xs text-slate-500 mt-1">Max 5MB • Accepted: JPEG, PNG, WebP, GIF</p>
+            </div>
+
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="relative">
+                <label className="block text-slate-300 font-semibold mb-2 text-sm sm:text-base">Preview</label>
+                <div className="relative w-full max-w-xs">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="rounded-lg border border-slate-600 max-h-48 object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
+                    title="Remove image"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">File: {imageFile?.name}</p>
+              </div>
+            )}
 
             {/* Submit Button */}
             <button
