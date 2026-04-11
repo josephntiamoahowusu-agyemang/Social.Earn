@@ -4,7 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
 
 // Icons
-import { LayoutDashboard, CheckSquare, Users, Link as LinkIcon, LogOut, Bell, FileText, Send, Activity, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Users, Link as LinkIcon, LogOut, Bell, FileText, Send, Activity, Settings, Menu, X, HelpCircle } from 'lucide-react';
 
 // Pages
 import { Auth } from './pages/Auth';
@@ -16,6 +16,7 @@ import { History } from './pages/History';
 import { Referrals } from './pages/Referrals';
 import { Profile } from './pages/Profile';
 import { Notifications } from './pages/Notifications';
+import { HelpCenter } from './pages/HelpCenter';
 
 // eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
@@ -100,6 +101,7 @@ const Sidebar = ({ role, isOpen, onClose }) => {
     { name: 'Task History', path: '/history', icon: <CheckSquare /> },
     { name: 'Refer & Earn', path: '/referrals', icon: <LinkIcon /> },
     { name: 'Notifications', path: '/notifications', icon: <Bell /> },
+    { name: 'Help Center', path: '/help', icon: <HelpCircle /> },
     { name: 'Profile', path: '/profile', icon: <Settings /> },
   ];
 
@@ -408,6 +410,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Dashboard /></AppLayout></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><History /></AppLayout></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Referrals /></AppLayout></ProtectedRoute>} />
+        <Route path="/help" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><HelpCenter /></AppLayout></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Profile /></AppLayout></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute requiredRole="user"><AppLayout role="user"><Notifications /></AppLayout></ProtectedRoute>} />
         
