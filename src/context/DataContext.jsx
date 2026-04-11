@@ -26,7 +26,8 @@ export const DataProvider = ({ children }) => {
   const [notifications, setNotifications] = useState(() => {
     const savedBroadcasts = localStorage.getItem('social_earn_broadcasts');
     const broadcasts = savedBroadcasts ? JSON.parse(savedBroadcasts) : [];
-    return broadcasts;
+    // Ensure all broadcasts are marked as unread when initializing
+    return broadcasts.map(b => ({ ...b, read: false }));
   });
   
   // Per-user isolated states, loaded manually on auth
