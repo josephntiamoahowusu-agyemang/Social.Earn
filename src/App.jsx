@@ -183,9 +183,79 @@ const Sidebar = ({ role, isOpen, onClose }) => {
   );
 };
 
-const Header = ({ onMenuClick, isMobileMenuOpen }) => {
+const NotificationModal = ({ isOpen, onClose, notifications }) => {
+   if (!isOpen) return null;
+   
+   return (
+      <>
+         {/* Backdrop */}
+         <div 
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 z-45"
+         />
+         
+         {/* Modal */}
+         <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-96 bg-brand-surface border border-slate-700 rounded-2xl shadow-2xl z-50 flex flex-col max-h-[80vh] md:max-h-96"
+         >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700">
+               <div className="flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-brand-primary" />
+                  <h2 className="text-lg font-bold text-white">Notifications</h2>
+                  {notifications.length > 0 && (
+                     <span className="ml-2 bg-brand-primary text-slate-900 text-xs font-bold px-2 py-1 rounded-full">
+                        {notifications.length}
+                     </span>
+                  )}
+               </div>
+               <button
+                  onClick={onClose}
+                  className="text-slate-400 hover:text-white transition-colors"
+                  aria-label="Close notifications"
+               >
+                  <X className="w-5 h-5" />
+               </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+               {notifications.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400">
+                     <Bell className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                     <p className="text-sm">No notifications yet</p>
+                  </div>
+               ) : (
+                  notifications.slice().reverse().map((notif, idx) => {
+                     const date = new Date(notif.timestamp);
+                     const formatTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                     const formatDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                     
+                     return (
+                        <div key={notif.id || idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 hover:border-brand-primary/50 transition-colors">
+                           <div className="flex justify-between items-start gap-2 mb-1">
+                              <h3 className="font-semibold text-white text-sm">{notif.title || 'Notification'}</h3>
+                              <span className="text-xs text-slate-500 whitespace-nowrap">{formatDate} {formatTime}</span>
+                           </div>
+                           <p className="text-xs sm:text-sm text-slate-300">{notif.message}</p>
+                           {notif.type === 'broadcast' && (
+                              <span className="inline-block mt-2 text-xs bg-brand-primary/20 text-brand-primary px-2 py-1 rounded-full">📢 Announcement</span>
+                           )}
+                        </div>
+                     );
+                  })
+               )}
+            </div>
+         </motion.div>
+      </>
+   );
+};
+
+const Header = ({ onMenuClick, isMobileMenuOpen, onNotificationClick }) => {
    const { notifications } = useData();
-   const navigate = useNavigate();
    
    return (
       <header className="h-12 sm:h-16 md:h-20 border-b border-slate-700/50 bg-brand-surface/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-2 sm:px-4 md:px-8 gap-4">
@@ -203,13 +273,15 @@ const Header = ({ onMenuClick, isMobileMenuOpen }) => {
          
          <div className="flex items-center gap-3 sm:gap-6">
             <button 
-               onClick={() => navigate('/notifications')}
+               onClick={onNotificationClick}
                className="relative p-2 text-slate-400 hover:text-brand-primary transition-colors touch-target"
                aria-label="View notifications"
             >
                <Bell className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                {notifications.length > 0 && (
-                  <span className="absolute top-0 right-0 w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full border border-brand-surface animate-pulse"></span>
+                  <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border border-brand-surface">
+                     {notifications.length > 99 ? '99+' : notifications.length}
+                  </span>
                )}
             </button>
          </div>
@@ -219,6 +291,8 @@ const Header = ({ onMenuClick, isMobileMenuOpen }) => {
 
 const AppLayout = ({ children, role }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const { notifications } = useData();
 
   const handleCloseMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -231,6 +305,12 @@ const AppLayout = ({ children, role }) => {
         <Header 
           onMenuClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
           isMobileMenuOpen={mobileMenuOpen}
+          onNotificationClick={() => setNotificationModalOpen(!notificationModalOpen)}
+        />
+        <NotificationModal 
+          isOpen={notificationModalOpen} 
+          onClose={() => setNotificationModalOpen(false)}
+          notifications={notifications}
         />
         <main className="flex-1 overflow-y-auto w-full">
           <div className="w-full max-w-7xl mx-auto px-2 sm:px-3 md:px-6 lg:px-8 py-2 sm:py-3 md:py-6 lg:py-8">
