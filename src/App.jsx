@@ -195,7 +195,8 @@ const NotificationModal = ({ isOpen, onClose, notifications, onMarkAsRead }) => 
       }
    }, [isOpen, onMarkAsRead]);
    
-   const unreadCount = notifications.filter(n => !n.read).length;
+   // Only count unread non-broadcast notifications
+   const unreadCount = notifications.filter(n => !n.read && n.type !== 'broadcast').length;
    
    return (
       <>
@@ -281,7 +282,9 @@ const NotificationModal = ({ isOpen, onClose, notifications, onMarkAsRead }) => 
 
 const Header = ({ onMenuClick, isMobileMenuOpen, onNotificationClick }) => {
    const { notifications } = useData();
-   const unreadCount = notifications.filter(n => !n.read).length;
+   // Only count unread non-broadcast notifications in the badge
+   // Broadcasts show in the modal but don't count toward the badge
+   const unreadCount = notifications.filter(n => !n.read && n.type !== 'broadcast').length;
    
    return (
       <header className="h-12 sm:h-16 md:h-20 border-b border-slate-700/50 bg-brand-surface/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-2 sm:px-4 md:px-8 gap-4">

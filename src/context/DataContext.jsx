@@ -107,7 +107,11 @@ export const DataProvider = ({ children }) => {
   };
 
   const markNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    // Only mark non-broadcast notifications as read
+    // Broadcasts should remain unread for other users
+    setNotifications(prev => prev.map(n => 
+      n.type === 'broadcast' ? n : { ...n, read: true }
+    ));
   };
 
   const verifyAndCompleteTask = async (taskId) => {
