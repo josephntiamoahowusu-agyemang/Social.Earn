@@ -80,18 +80,21 @@ export const DataProvider = ({ children }) => {
       }
     };
     
-    // Also check for broadcasts on mount
-    const savedBroadcasts = localStorage.getItem('social_earn_broadcasts');
-    if (savedBroadcasts) {
-      const broadcasts = JSON.parse(savedBroadcasts);
-      if (broadcasts.length > 0) {
-        const recentBroadcasts = broadcasts.slice(-5).reverse();
-        setNotifications(prev => {
-          const newNotifs = recentBroadcasts.filter(b => !prev.some(n => n.id === b.id));
-          return [...newNotifs, ...prev];
-        });
+    // Check for broadcasts on mount
+    const checkBroadcasts = () => {
+      const savedBroadcasts = localStorage.getItem('social_earn_broadcasts');
+      if (savedBroadcasts) {
+        const broadcasts = JSON.parse(savedBroadcasts);
+        if (broadcasts.length > 0) {
+          const recentBroadcasts = broadcasts.slice(-5).reverse();
+          setNotifications(prev => {
+            const newNotifs = recentBroadcasts.filter(b => !prev.some(n => n.id === b.id));
+            return [...newNotifs, ...prev];
+          });
+        }
       }
-    }
+    };
+    checkBroadcasts();
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);

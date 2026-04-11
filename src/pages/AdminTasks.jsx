@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Camera, Repeat2, Music, Users, Share2, Heart, MessageCircle, CheckCircle, Globe, DollarSign } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 
 const PLATFORMS = [
   { id: 'Instagram', name: 'Instagram', icon: <Camera className="w-6 h-6" />, color: 'pink' },
@@ -107,7 +107,9 @@ export const AdminTasks = () => {
     setTaskForm({ platform: '', action: '', target: '', amount: '0.10', currency: 'USD', max: '1000' });
   };
 
+  // eslint-disable-next-line no-unused-vars
   const selectedPlatform = PLATFORMS.find(p => p.id === taskForm.platform);
+  // eslint-disable-next-line no-unused-vars
   const selectedAction = ACTIONS.find(a => a.id === taskForm.action);
 
   return (

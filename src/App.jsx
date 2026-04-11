@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
 
@@ -25,6 +25,10 @@ const NotificationToasts = () => {
    const { notifications } = useData();
    const [displayedNotifs, setDisplayedNotifs] = React.useState([]);
 
+   const handleClose = React.useCallback((notifId) => {
+      setDisplayedNotifs(prev => prev.filter(n => n.id !== notifId));
+   }, []);
+
    React.useEffect(() => {
       if (notifications.length > 0) {
          const latestNotif = notifications[0];
@@ -34,11 +38,7 @@ const NotificationToasts = () => {
             setDisplayedNotifs(prev => [latestNotif, ...prev].slice(0, 5));
          }
       }
-   }, [notifications]);
-
-   const handleClose = (notifId) => {
-      setDisplayedNotifs(prev => prev.filter(n => n.id !== notifId));
-   };
+   }, [notifications, displayedNotifs]);
 
    React.useEffect(() => {
       // Auto-dismiss notifications after 5 seconds
@@ -49,7 +49,7 @@ const NotificationToasts = () => {
       );
 
       return () => timers.forEach(timer => clearTimeout(timer));
-   }, [displayedNotifs]);
+   }, [displayedNotifs, handleClose]);
 
    return (
       <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 flex flex-col space-y-2 pointer-events-none">
