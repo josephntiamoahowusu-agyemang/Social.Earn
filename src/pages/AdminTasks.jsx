@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
-import { Instagram, Repeat2, Music, Users, Share2, Heart, MessageCircle, CheckCircle, Globe, DollarSign } from 'lucide-react';
+import { Camera, Repeat2, Music, Users, Share2, Heart, MessageCircle, CheckCircle, Globe, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const PLATFORMS = [
-  { id: 'Instagram', name: 'Instagram', icon: <Instagram className="w-6 h-6" />, color: 'pink' },
+  { id: 'Instagram', name: 'Instagram', icon: <Camera className="w-6 h-6" />, color: 'pink' },
   { id: 'TikTok', name: 'TikTok', icon: <Music className="w-6 h-6" />, color: 'cyan' },
   { id: 'YouTube', name: 'YouTube', icon: <Repeat2 className="w-6 h-6" />, color: 'red' },
   { id: 'Facebook', name: 'Facebook', icon: <Share2 className="w-6 h-6" />, color: 'blue' },
