@@ -74,7 +74,8 @@ export const DataProvider = ({ children }) => {
             if (prev.some(n => n.id === latestBroadcast.id)) {
               return prev;
             }
-            return [latestBroadcast, ...prev];
+            // Add broadcast as unread
+            return [{ ...latestBroadcast, read: false }, ...prev];
           });
         }
       }
@@ -86,9 +87,12 @@ export const DataProvider = ({ children }) => {
       if (savedBroadcasts) {
         const broadcasts = JSON.parse(savedBroadcasts);
         if (broadcasts.length > 0) {
-          const recentBroadcasts = broadcasts.slice(-5).reverse();
+          const recentBroadcasts = broadcasts.slice(-10).reverse();
           setNotifications(prev => {
-            const newNotifs = recentBroadcasts.filter(b => !prev.some(n => n.id === b.id));
+            // Add broadcasts that aren't already in notifications, marked as unread
+            const newNotifs = recentBroadcasts
+              .filter(b => !prev.some(n => n.id === b.id))
+              .map(b => ({ ...b, read: false })); // Ensure broadcasts are unread
             return [...newNotifs, ...prev];
           });
         }
@@ -162,6 +166,7 @@ export const DataProvider = ({ children }) => {
       title: '📢 Admin Announcement', 
       message, 
       type: 'broadcast',
+      read: false,
       timestamp: new Date().toISOString()
     };
     
