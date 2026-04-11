@@ -105,6 +105,36 @@ export const DataProvider = ({ children }) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Listen for real-time broadcasts via BroadcastChannel
+  useEffect(() => {
+    try {
+      const channel = new BroadcastChannel('social_earn_broadcasts');
+      
+      const handleBroadcast = (event) => {
+        if (event.data?.type === 'NEW_BROADCAST') {
+          const newBroadcast = event.data.broadcast;
+          setNotifications(prev => {
+            // Avoid duplicates
+            if (prev.some(n => n.id === newBroadcast.id)) {
+              return prev;
+            }
+            // Add broadcast as unread
+            return [{ ...newBroadcast, read: false }, ...prev];
+          });
+        }
+      };
+      
+      channel.addEventListener('message', handleBroadcast);
+      
+      return () => {
+        channel.removeEventListener('message', handleBroadcast);
+        channel.close();
+      };
+    } catch (e) {
+      // BroadcastChannel not supported in this browser
+    }
+  }, []);
+
   // Actions
   const addNotification = (notif) => {
     const payload = { id: Date.now(), timestamp: new Date(), read: false, ...notif };
@@ -177,11 +207,29 @@ export const DataProvider = ({ children }) => {
     broadcasts.push(broadcast);
     localStorage.setItem('social_earn_broadcasts', JSON.stringify(broadcasts));
     
-    // Add to notifications array (for bell count) but NOT as a toast
-    // Only non-broadcast notifications show as toasts
+    // Add to notifications array immediately
     setNotifications(prev => [broadcast, ...prev]);
     
-    // Emit storage event for other tabs
+    // Add success confirmation notification for admin
+    addNotification({
+      title: '✅ Broadcast Sent',
+      message: `Your message was sent to all users successfully!`,
+      type: 'success'
+    });
+    
+    // Try BroadcastChannel for real-time sync (works across tabs/windows in same browser)
+    try {
+      const channel = new BroadcastChannel('social_earn_broadcasts');
+      channel.postMessage({
+        type: 'NEW_BROADCAST',
+        broadcast: broadcast
+      });
+      channel.close();
+    } catch (e) {
+      // BroadcastChannel not supported, fallback to storage event
+    }
+    
+    // Emit storage event for other tabs as fallback
     window.dispatchEvent(new StorageEvent('storage', {
       key: 'social_earn_broadcasts',
       newValue: JSON.stringify(broadcasts)
