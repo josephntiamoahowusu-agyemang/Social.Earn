@@ -185,8 +185,17 @@ const Sidebar = ({ role, isOpen, onClose }) => {
   );
 };
 
-const NotificationModal = ({ isOpen, onClose, notifications }) => {
+const NotificationModal = ({ isOpen, onClose, notifications, onMarkAsRead }) => {
    if (!isOpen) return null;
+   
+   // Mark notifications as read when modal opens
+   React.useEffect(() => {
+      if (isOpen && onMarkAsRead) {
+         onMarkAsRead();
+      }
+   }, [isOpen, onMarkAsRead]);
+   
+   const unreadCount = notifications.filter(n => !n.read).length;
    
    return (
       <>
@@ -208,9 +217,9 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
                <div className="flex items-center gap-2">
                   <Bell className="w-5 h-5 text-brand-primary" />
                   <h2 className="text-lg font-bold text-white">Notifications</h2>
-                  {notifications.length > 0 && (
-                     <span className="ml-2 bg-brand-primary text-slate-900 text-xs font-bold px-2 py-1 rounded-full">
-                        {notifications.length}
+                  {unreadCount > 0 && (
+                     <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        {unreadCount} New
                      </span>
                   )}
                </div>
@@ -237,14 +246,28 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
                      const formatDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                      
                      return (
-                        <div key={notif.id || idx} className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 hover:border-brand-primary/50 transition-colors">
+                        <div key={notif.id || idx} className={`border rounded-lg p-3 transition-colors ${
+                           notif.read 
+                           ? 'bg-slate-800/30 border-slate-700' 
+                           : 'bg-slate-800/70 border-brand-primary/50 ring-1 ring-brand-primary/30'
+                        }`}>
                            <div className="flex justify-between items-start gap-2 mb-1">
-                              <h3 className="font-semibold text-white text-sm">{notif.title || 'Notification'}</h3>
+                              <div className="flex-1 min-w-0">
+                                 <div className="flex items-center gap-2">
+                                    <h3 className="font-semibold text-white text-sm">{notif.title || 'Notification'}</h3>
+                                    {!notif.read && (
+                                       <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></span>
+                                    )}
+                                 </div>
+                              </div>
                               <span className="text-xs text-slate-500 whitespace-nowrap">{formatDate} {formatTime}</span>
                            </div>
                            <p className="text-xs sm:text-sm text-slate-300">{notif.message}</p>
                            {notif.type === 'broadcast' && (
                               <span className="inline-block mt-2 text-xs bg-brand-primary/20 text-brand-primary px-2 py-1 rounded-full">📢 Announcement</span>
+                           )}
+                           {notif.read && (
+                              <p className="text-xs text-slate-500 mt-2">✓ Read</p>
                            )}
                         </div>
                      );
@@ -258,6 +281,7 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
 
 const Header = ({ onMenuClick, isMobileMenuOpen, onNotificationClick }) => {
    const { notifications } = useData();
+   const unreadCount = notifications.filter(n => !n.read).length;
    
    return (
       <header className="h-12 sm:h-16 md:h-20 border-b border-slate-700/50 bg-brand-surface/50 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-2 sm:px-4 md:px-8 gap-4">
@@ -280,9 +304,9 @@ const Header = ({ onMenuClick, isMobileMenuOpen, onNotificationClick }) => {
                aria-label="View notifications"
             >
                <Bell className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
-               {notifications.length > 0 && (
+               {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border border-brand-surface">
-                     {notifications.length > 99 ? '99+' : notifications.length}
+                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                )}
             </button>
@@ -294,7 +318,7 @@ const Header = ({ onMenuClick, isMobileMenuOpen, onNotificationClick }) => {
 const AppLayout = ({ children, role }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
-  const { notifications } = useData();
+  const { notifications, markNotificationsAsRead } = useData();
 
   const handleCloseMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -313,6 +337,7 @@ const AppLayout = ({ children, role }) => {
           isOpen={notificationModalOpen} 
           onClose={() => setNotificationModalOpen(false)}
           notifications={notifications}
+          onMarkAsRead={markNotificationsAsRead}
         />
         <main className="flex-1 overflow-y-auto w-full">
           <div className="w-full max-w-7xl mx-auto px-2 sm:px-3 md:px-6 lg:px-8 py-2 sm:py-3 md:py-6 lg:py-8">

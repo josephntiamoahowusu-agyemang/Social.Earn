@@ -102,8 +102,12 @@ export const DataProvider = ({ children }) => {
 
   // Actions
   const addNotification = (notif) => {
-    const payload = { id: Date.now(), timestamp: new Date(), ...notif };
+    const payload = { id: Date.now(), timestamp: new Date(), read: false, ...notif };
     setNotifications(prev => [payload, ...prev]);
+  };
+
+  const markNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   const verifyAndCompleteTask = async (taskId) => {
@@ -191,6 +195,7 @@ export const DataProvider = ({ children }) => {
       allUsers,
       notifications, 
       addNotification,
+      markNotificationsAsRead,
       verifyAndCompleteTask,
       adminPostTask,
       adminBroadcast,
