@@ -163,8 +163,9 @@ export const DataProvider = ({ children }) => {
     broadcasts.push(broadcast);
     localStorage.setItem('social_earn_broadcasts', JSON.stringify(broadcasts));
     
-    // Also add to own notification queue immediately
-    addNotification(broadcast);
+    // Add to notifications array (for bell count) but NOT as a toast
+    // Only non-broadcast notifications show as toasts
+    setNotifications(prev => [broadcast, ...prev]);
     
     // Emit storage event for other tabs
     window.dispatchEvent(new StorageEvent('storage', {

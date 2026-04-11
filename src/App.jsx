@@ -31,10 +31,12 @@ const NotificationToasts = () => {
 
    React.useEffect(() => {
       if (notifications.length > 0) {
-         const latestNotif = notifications[0];
+         // Filter out broadcast notifications - they only show in the bell, not as toasts
+         const nonBroadcastNotifs = notifications.filter(n => n.type !== 'broadcast');
+         const latestNotif = nonBroadcastNotifs[0];
          
          // Only add if not already displayed
-         if (!displayedNotifs.some(n => n.id === latestNotif.id)) {
+         if (latestNotif && !displayedNotifs.some(n => n.id === latestNotif.id)) {
             setDisplayedNotifs(prev => [latestNotif, ...prev].slice(0, 5));
          }
       }
